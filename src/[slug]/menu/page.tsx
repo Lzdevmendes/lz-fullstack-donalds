@@ -44,4 +44,4 @@ const RestaurantMenuPage = async ({
 
 export default RestaurantMenuPage;
 
-// http://localhost:3000/fsw-donalds/menu?consumptionMethod=dine_in
+// http://localhost:3000/pedefree/menu?consumptionMethod=dine_in
