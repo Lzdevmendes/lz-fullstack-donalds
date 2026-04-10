@@ -1,7 +1,7 @@
 "use client";
 
 import { Prisma } from "@prisma/client";
-import { ClockIcon } from "lucide-react";
+import { ClockIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -28,12 +28,17 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
   const [selectedCategory, setSelectedCategory] =
     useState<MenuCategoriesWithProducts>(restaurant.menuCategories[0]);
 
+  const allProducts = restaurant.menuCategories.flatMap((c) => c.products);
+  const featuredProducts = allProducts.filter((p) => p.badge);
+
   const handleCategoryClick = (category: MenuCategoriesWithProducts) => {
     setSelectedCategory(category);
   };
+
   const getCategoryButtonVariant = (category: MenuCategoriesWithProducts) => {
     return selectedCategory.id === category.id ? "default" : "secondary";
   };
+
   return (
     <div className="relative z-50 mt-[-1.5rem] rounded-t-3xl bg-white">
       <div className="p-5">
@@ -54,6 +59,16 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
           <p>Aberto!</p>
         </div>
       </div>
+
+      {featuredProducts.length > 0 && (
+        <div className="px-5 pb-2">
+          <div className="mb-3 flex items-center gap-2">
+            <StarIcon size={14} className="text-primary" />
+            <h3 className="font-semibold">Destaques</h3>
+          </div>
+          <Products products={featuredProducts} />
+        </div>
+      )}
 
       <ScrollArea className="w-full">
         <div className="flex w-max space-x-4 p-4 pt-0">

@@ -29,6 +29,7 @@ const main = async () => {
       data: [
         {
           name: "Combo Duplo Especial",
+          badge: "MAIS_PEDIDO",
           description:
             "Dois smash burgers de carne 100% bovina, alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergelim. Acompanha batata e bebida.",
           price: 39.9,
@@ -67,6 +68,7 @@ const main = async () => {
         },
         {
           name: "Combo Crispy Chicken Elite",
+          badge: "NOVO",
           description:
             "Pão brioche com batata, molho honey fire, bacon em fatias, alface, tomate, queijo cheddar e filé 100% de peito de frango temperado e empanado. Acompanha batata e bebida.",
           price: 39.9,
@@ -113,6 +115,7 @@ const main = async () => {
       data: [
         {
           name: "Smash Duplo",
+          badge: "MAIS_PEDIDO",
           description:
             "Dois smash burgers de carne 100% bovina, alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergelim.",
           ingredients: [
