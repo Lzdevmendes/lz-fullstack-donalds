@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { db } from "@/lib/prisma";
@@ -35,7 +36,15 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
           oferecer praticidade e sabor em cada detalhe!
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4 pt-14">
+      <div className="mt-6 w-full">
+        <Link
+          href={`/${slug}/orders`}
+          className="block text-center text-sm text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Ver meus pedidos anteriores
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-4 pt-8">
         <ConsumptionMethodOption
           slug={slug}
           option="DINE_IN"
