@@ -1,12 +1,13 @@
 "use client";
 
 import { ConsumptionMethod } from "@prisma/client";
-import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { CheckCircleIcon, MinusIcon, PlusIcon, TagIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -16,6 +17,7 @@ import {
 import { useCart } from "@/contexts/cart";
 
 import { createOrder } from "../actions";
+import { validateCoupon } from "../coupon-actions";
 
 interface CartSheetProps {
   open: boolean;
@@ -41,6 +43,34 @@ const CartSheet = ({
     useCart();
   const [isPending, startTransition] = useTransition();
 
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number | null>(null);
+  const [isCouponPending, startCouponTransition] = useTransition();
+
+  const discountedTotal =
+    appliedDiscount !== null ? total * (1 - appliedDiscount / 100) : total;
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+    startCouponTransition(async () => {
+      const result = await validateCoupon(couponCode, restaurantId);
+      if (result.valid) {
+        setAppliedDiscount(result.discountPercent);
+        setCouponError("");
+      } else {
+        setAppliedDiscount(null);
+        setCouponError(result.error);
+      }
+    });
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedDiscount(null);
+    setCouponCode("");
+    setCouponError("");
+  };
+
   const handleOrder = () => {
     startTransition(async () => {
       const { orderId, slug } = await createOrder({
@@ -48,8 +78,11 @@ const CartSheet = ({
         restaurantId,
         consumptionMethod,
         items,
+        couponCode: appliedDiscount !== null ? couponCode : undefined,
       });
       clearCart();
+      setAppliedDiscount(null);
+      setCouponCode("");
       onOpenChange(false);
       router.push(`/${slug}/orders/${orderId}`);
     });
@@ -131,9 +164,71 @@ const CartSheet = ({
               ))}
             </div>
 
-            <div className="mt-4 flex items-center justify-between border-t pt-4">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="font-semibold">{formatCurrency(total)}</p>
+            {/* COUPON SECTION */}
+            <div className="mt-4 border-t pt-4">
+              {appliedDiscount !== null ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-50 px-3 py-2 text-green-700">
+                  <div className="flex items-center gap-2">
+                    <CheckCircleIcon size={16} />
+                    <span className="text-sm font-medium">
+                      {couponCode.toUpperCase()} — {appliedDiscount}% de desconto
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    className="text-xs text-green-600 underline"
+                  >
+                    Remover
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <TagIcon
+                        size={14}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder="Cupom de desconto"
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value);
+                          setCouponError("");
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                        className="pl-8 uppercase"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleApplyCoupon}
+                      disabled={isCouponPending || !couponCode.trim()}
+                    >
+                      {isCouponPending ? "..." : "Aplicar"}
+                    </Button>
+                  </div>
+                  {couponError && (
+                    <p className="text-xs text-red-500">{couponError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* TOTAL */}
+            <div className="mt-4 space-y-1 border-t pt-4">
+              {appliedDiscount !== null && (
+                <div className="flex items-center justify-between text-sm">
+                  <p className="text-muted-foreground">Subtotal</p>
+                  <p className="text-muted-foreground line-through">
+                    {formatCurrency(total)}
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="font-semibold">{formatCurrency(discountedTotal)}</p>
+              </div>
             </div>
 
             <Button
