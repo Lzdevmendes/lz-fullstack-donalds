@@ -13,6 +13,7 @@ export const validateCoupon = async (
   if (!coupon) return { valid: false, error: "Cupom não encontrado" };
   if (coupon.restaurantId !== restaurantId)
     return { valid: false, error: "Cupom inválido para este restaurante" };
+  if (!coupon.isActive) return { valid: false, error: "Cupom inativo" };
   if (coupon.usedCount >= coupon.maxUses)
     return { valid: false, error: "Cupom esgotado" };
   if (coupon.expiresAt && coupon.expiresAt < new Date())

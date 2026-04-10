@@ -14,6 +14,7 @@ interface CreateOrderInput {
   customerPhone?: string;
   tableNumber?: number;
   couponCode?: string;
+  fcmToken?: string;
 }
 
 export const createOrder = async ({
@@ -24,6 +25,7 @@ export const createOrder = async ({
   customerPhone,
   tableNumber,
   couponCode,
+  fcmToken,
 }: CreateOrderInput): Promise<{ orderId: number; slug: string }> => {
   const subtotal = items.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -40,6 +42,7 @@ export const createOrder = async ({
     if (
       coupon &&
       coupon.restaurantId === restaurantId &&
+      coupon.isActive &&
       coupon.usedCount < coupon.maxUses &&
       (!coupon.expiresAt || coupon.expiresAt > new Date())
     ) {
@@ -57,6 +60,7 @@ export const createOrder = async ({
       customerName,
       customerPhone,
       tableNumber,
+      fcmToken: fcmToken ?? null,
       orderProducts: {
         createMany: {
           data: items.map((item) => ({

@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/cart";
+import { useFcmToken } from "@/lib/use-fcm-token";
 
 import { createOrder } from "../actions";
 import { validateCoupon } from "../coupon-actions";
@@ -43,6 +44,7 @@ const CartSheet = ({
   const router = useRouter();
   const { items, removeItem, increaseQuantity, decreaseQuantity, total, clearCart } =
     useCart();
+  const fcmToken = useFcmToken();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<Step>("cart");
   const [customerName, setCustomerName] = useState("");
@@ -106,6 +108,7 @@ const CartSheet = ({
         customerPhone: customerPhone.trim() || undefined,
         tableNumber: tableNumber ? Number(tableNumber) : undefined,
         couponCode: appliedDiscount !== null ? couponCode : undefined,
+        fcmToken: fcmToken ?? undefined,
       });
       clearCart();
       setAppliedDiscount(null);
