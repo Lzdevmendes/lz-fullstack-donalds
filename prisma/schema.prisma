@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,8 +24,23 @@ model Restaurant {
   products        Product[]
   orders          Order[]
   coupons         Coupon[]
+  openingHours    OpeningHours[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model OpeningHours {
+  id           String     @id @default(uuid())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+  dayOfWeek    Int // 0 = domingo, 6 = sábado
+  openTime     String // "HH:MM"
+  closeTime    String // "HH:MM"
+  isClosed     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([restaurantId, dayOfWeek])
 }
 
 model MenuCategory {
@@ -49,6 +61,7 @@ model Product {
   imageUrl       String
   ingredients    String[]
   badge          String?
+  isAvailable    Boolean        @default(true)
   orderProducts  OrderProduct[]
   restaurant     Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId   String
@@ -69,6 +82,7 @@ model Order {
   restaurant        Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId      String
   orderProducts     OrderProduct[]
+  rating            Rating?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
@@ -86,12 +100,22 @@ model OrderProduct {
   updatedAt DateTime @updatedAt
 }
 
+model Rating {
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int      @unique
+  stars     Int // 1 a 5
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
 model Coupon {
   id              String     @id @default(uuid())
   code            String     @unique
   discountPercent Int
   maxUses         Int        @default(100)
   usedCount       Int        @default(0)
+  isActive        Boolean    @default(true)
   expiresAt       DateTime?
   restaurantId    String
   restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -103,6 +127,7 @@ enum OrderStatus {
   PENDING
   IN_PREPARATION
   FINISHED
+  CANCELLED
 }
 
 enum ConsumptionMethod {
