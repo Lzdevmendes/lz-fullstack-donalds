@@ -6,14 +6,16 @@ import { createContext, ReactNode, useContext, useState } from "react";
 export interface CartItem {
   product: Product;
   quantity: number;
+  notes?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => void;
+  addItem: (product: Product, notes?: string) => void;
   removeItem: (productId: string) => void;
   increaseQuantity: (productId: string) => void;
   decreaseQuantity: (productId: string) => void;
+  updateNotes: (productId: string, notes: string) => void;
   clearCart: () => void;
   total: number;
   totalItems: number;
@@ -28,17 +30,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [consumptionMethod, setConsumptionMethod] =
     useState<ConsumptionMethod | null>(null);
 
-  const addItem = (product: Product) => {
+  const addItem = (product: Product, notes?: string) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
         return prev.map((i) =>
           i.product.id === product.id
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity + 1, notes: notes ?? i.notes }
             : i,
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: 1, notes }];
     });
   };
 
@@ -64,6 +66,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const updateNotes = (productId: string, notes: string) => {
+    setItems((prev) =>
+      prev.map((i) => (i.product.id === productId ? { ...i, notes } : i)),
+    );
+  };
+
   const clearCart = () => setItems([]);
 
   const total = items.reduce(
@@ -81,6 +89,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         removeItem,
         increaseQuantity,
         decreaseQuantity,
+        updateNotes,
         clearCart,
         total,
         totalItems,

@@ -33,13 +33,15 @@ const ProductDetails = ({
 }: ProductDetailsProps) => {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState("");
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addItem(product);
+      addItem(product, notes.trim() || undefined);
     }
     onOpenChange(false);
     setQuantity(1);
+    setNotes("");
   };
 
   return (
@@ -110,8 +112,21 @@ const ProductDetails = ({
             </div>
           </div>
 
+          <div className="mt-5">
+            <label className="mb-1 block text-sm font-medium">
+              Observações
+            </label>
+            <textarea
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              rows={2}
+              placeholder="Ex: sem cebola, bem passado..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
           <Button
-            className="mt-6 w-full rounded-full"
+            className="mt-4 w-full rounded-full"
             onClick={handleAddToCart}
           >
             Adicionar ao carrinho •{" "}

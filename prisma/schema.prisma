@@ -79,6 +79,7 @@ model OrderProduct {
   orderId   Int
   quantity  Int
   price     Float
+  notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

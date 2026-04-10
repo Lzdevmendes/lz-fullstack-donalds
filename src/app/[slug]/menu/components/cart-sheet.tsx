@@ -114,7 +114,7 @@ const CartSheet = ({
             ) : (
               <div className="p-5">
                 <div className="space-y-4">
-                  {items.map(({ product, quantity }) => (
+                  {items.map(({ product, quantity, notes }) => (
                     <div
                       key={product.id}
                       className="flex items-center gap-4 border-b pb-4"
@@ -135,6 +135,11 @@ const CartSheet = ({
                         <p className="text-sm font-semibold">
                           {formatCurrency(product.price)}
                         </p>
+                        {notes && (
+                          <p className="mt-0.5 text-xs italic text-muted-foreground">
+                            {notes}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1">
@@ -187,7 +192,7 @@ const CartSheet = ({
         )}
 
         {step === "customer" && (
-          <div className="p-5 space-y-4">
+          <div className="space-y-4 p-5">
             <div>
               <label className="mb-1 block text-sm font-medium">
                 Seu nome <span className="text-red-500">*</span>

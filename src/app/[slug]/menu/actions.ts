@@ -43,6 +43,7 @@ export const createOrder = async ({
             productId: item.product.id,
             quantity: item.quantity,
             price: item.product.price,
+            notes: item.notes,
           })),
         },
       },
