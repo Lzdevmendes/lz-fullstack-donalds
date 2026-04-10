@@ -20,6 +20,7 @@ model Restaurant {
   description    String
   avatarImageUrl String
   coverImageUrl  String
+  primaryColor   String         @default("42 100% 50%")
   menuCategories MenuCategory[]
   products       Product[]
   orders         Order[]
