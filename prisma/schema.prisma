@@ -21,9 +21,11 @@ model Restaurant {
   avatarImageUrl String
   coverImageUrl  String
   primaryColor   String         @default("42 100% 50%")
+  tableCount     Int            @default(20)
   menuCategories MenuCategory[]
   products       Product[]
   orders         Order[]
+  coupons        Coupon[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -76,6 +78,19 @@ model OrderProduct {
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id              String     @id @default(uuid())
+  code            String     @unique
+  discountPercent Int
+  maxUses         Int        @default(100)
+  usedCount       Int        @default(0)
+  expiresAt       DateTime?
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
 enum OrderStatus {
