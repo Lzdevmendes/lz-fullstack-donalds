@@ -12,7 +12,7 @@ const QrGrid = ({ slug, tableCount, baseUrl }: QrGridProps) => {
   return (
     <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
       {Array.from({ length: tableCount }, (_, i) => i + 1).map((table) => {
-        const url = `${baseUrl}/${slug}/menu?consumptionMethod=DINE_IN&table=${table}`;
+        const url = `${baseUrl}/${slug}?consumptionMethod=DINE_IN&table=${table}`;
         return (
           <div
             key={table}

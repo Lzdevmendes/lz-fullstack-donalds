@@ -2,7 +2,8 @@
 
 import { ConsumptionMethod, Prisma } from "@prisma/client";
 import Image from "next/image";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import ConsumptionMethodOption from "./components/consumption-method-option";
 import RestaurantCategories from "./menu/components/categories";
@@ -19,10 +20,21 @@ interface RestaurantAppProps {
   restaurant: RestaurantWithMenu;
 }
 
+const VALID_METHODS: ConsumptionMethod[] = ["DINE_IN", "TAKEAWAY"];
+
 export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
+  const searchParams = useSearchParams();
   const [page, setPage] = useState<Page>("welcome");
   const [consumptionMethod, setConsumptionMethod] =
     useState<ConsumptionMethod>("DINE_IN");
+
+  useEffect(() => {
+    const method = searchParams.get("consumptionMethod")?.toUpperCase();
+    if (method && VALID_METHODS.includes(method as ConsumptionMethod)) {
+      setConsumptionMethod(method as ConsumptionMethod);
+      setPage("menu");
+    }
+  }, [searchParams]);
 
   if (page === "menu") {
     return (
