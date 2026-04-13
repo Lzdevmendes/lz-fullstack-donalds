@@ -60,34 +60,31 @@ export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center px-6 pt-24">
-      <div className="flex flex-col items-center gap-2">
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-10 pt-safe">
+      {/* Logo e nome */}
+      <div className="flex flex-col items-center gap-3">
         <Image
           src={restaurant.avatarImageUrl}
           alt={restaurant.name}
-          width={82}
-          height={82}
+          width={90}
+          height={90}
+          className="rounded-2xl shadow-sm"
         />
-        <h2 className="font-semibold">{restaurant.name}</h2>
+        <h2 className="text-lg font-semibold">{restaurant.name}</h2>
       </div>
-      <div className="space-y-2 pt-24 text-center">
-        <h3 className="text-2xl font-semibold">Seja bem-vindo!</h3>
-        <p className="opacity-55">
-          Escolha como prefere aproveitar sua refeição. Estamos aqui para
-          oferecer praticidade e sabor em cada detalhe!
+
+      {/* Boas-vindas */}
+      <div className="mt-10 max-w-xs space-y-2 text-center">
+        <h3 className="text-2xl font-bold">Seja bem-vindo!</h3>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Escolha como prefere aproveitar sua refeição.
         </p>
       </div>
-      <div className="mt-6 w-full">
-        <button
-          onClick={() => setPage("orders")}
-          className="block w-full text-center text-sm text-muted-foreground underline-offset-2 hover:underline"
-        >
-          Ver meus pedidos anteriores
-        </button>
-      </div>
-      <div className="grid grid-cols-2 gap-4 pt-8">
+
+      {/* Opções de consumo */}
+      <div className="mt-8 grid w-full max-w-xs grid-cols-2 gap-4">
         <ConsumptionMethodOption
-          buttonText="Para comer aqui"
+          buttonText="Comer aqui"
           imageAlt="Comer aqui"
           imageUrl="/dine_in.png"
           onClick={() => {
@@ -105,6 +102,14 @@ export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
           }}
         />
       </div>
+
+      {/* Link pedidos anteriores */}
+      <button
+        onClick={() => setPage("orders")}
+        className="mt-8 rounded-full px-4 py-2 text-sm text-muted-foreground underline-offset-2 hover:underline active:opacity-70"
+      >
+        Ver meus pedidos anteriores
+      </button>
     </div>
   );
 }
