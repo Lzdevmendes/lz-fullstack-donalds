@@ -7,6 +7,7 @@ import { db } from "@/lib/prisma";
 
 import OrderStatusPoller from "./components/order-status-poller";
 import RatingForm from "./components/rating-form";
+import { WhatsAppButton } from "./components/whatsapp-button";
 
 interface OrderConfirmationPageProps {
   params: Promise<{ slug: string; orderId: string }>;
@@ -116,9 +117,12 @@ const OrderConfirmationPage = async ({
         )}
       </div>
 
-      <Button asChild className="w-full max-w-sm rounded-full">
-        <Link href={`/${slug}`}>Fazer novo pedido</Link>
-      </Button>
+      <div className="w-full max-w-sm space-y-3">
+        <WhatsAppButton order={order} />
+        <Button asChild className="h-12 w-full rounded-full">
+          <Link href={`/${slug}`}>Fazer novo pedido</Link>
+        </Button>
+      </div>
     </div>
   );
 };
