@@ -34,13 +34,6 @@ const STATUS_NEXT: Partial<Record<OrderStatus, OrderStatus>> = {
   IN_PREPARATION: "FINISHED",
 };
 
-const STATUS_LABEL: Record<OrderStatus, string> = {
-  PENDING: "Aguardando",
-  IN_PREPARATION: "Em preparo",
-  FINISHED: "Pronto",
-  CANCELLED: "Cancelado",
-};
-
 const STATUS_BTN: Partial<Record<OrderStatus, string>> = {
   PENDING: "Iniciar preparo",
   IN_PREPARATION: "Marcar como pronto",
@@ -117,31 +110,31 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
       }`}
     >
       <div className="mb-2 flex items-center justify-between">
-        <span className="font-semibold">#{order.id}</span>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <ClockIcon size={11} />
+        <span className="text-base font-bold">#{order.id}</span>
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <ClockIcon size={13} />
           {elapsed(order.createdAt)}
         </div>
       </div>
 
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">
+        <p className="text-sm font-medium text-muted-foreground">
           {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
           {order.tableNumber ? ` · Mesa ${order.tableNumber}` : ""}
         </p>
         {order.customerName && (
-          <p className="text-xs text-muted-foreground">{order.customerName}</p>
+          <p className="text-sm font-medium">{order.customerName}</p>
         )}
       </div>
 
-      <ul className="mb-4 space-y-1.5">
+      <ul className="mb-4 space-y-2">
         {order.orderProducts.map((op, i) => (
           <li key={i} className="text-sm">
-            <span className="font-medium">
+            <span className="font-semibold">
               {op.quantity}x {op.product.name}
             </span>
             {op.notes && (
-              <p className="text-xs text-muted-foreground">↳ {op.notes}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">↳ {op.notes}</p>
             )}
           </li>
         ))}
@@ -150,8 +143,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
       <div className="flex gap-2">
         {STATUS_NEXT[order.status] && (
           <Button
-            size="sm"
-            className="flex-1 rounded-full"
+            className="h-11 flex-1 rounded-full text-sm"
             disabled={updatingId === order.id || cancellingId === order.id}
             onClick={() => handleAdvanceStatus(order)}
           >
@@ -161,13 +153,13 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
 
         {(order.status === "PENDING" || order.status === "IN_PREPARATION") && (
           <Button
-            size="sm"
             variant="outline"
-            className="rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
+            className="h-11 w-11 shrink-0 rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
             disabled={cancellingId === order.id || updatingId === order.id}
             onClick={() => handleCancel(order)}
+            aria-label="Cancelar pedido"
           >
-            <XCircleIcon size={14} />
+            <XCircleIcon size={18} />
           </Button>
         )}
       </div>
@@ -175,70 +167,92 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-5">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Painel da Cozinha</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={fetchOrders}
-            disabled={isPending}
-          >
-            <RefreshCwIcon size={16} className={isPending ? "animate-spin" : ""} />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleLogout}>
-            <LogOutIcon size={16} />
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <h2 className="mb-3 font-semibold text-yellow-700">
-            Aguardando ({pending.length})
-          </h2>
-          <div className="space-y-3">
-            {pending.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sem pedidos</p>
-            ) : (
-              pending.map((o) => <OrderCard key={o.id} order={o} />)
-            )}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="mb-3 font-semibold text-blue-700">
-            Em preparo ({inPrep.length})
-          </h2>
-          <div className="space-y-3">
-            {inPrep.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sem pedidos</p>
-            ) : (
-              inPrep.map((o) => <OrderCard key={o.id} order={o} />)
-            )}
+    <div className="min-h-screen bg-gray-50 pb-8">
+      {/* Header */}
+      <div className="sticky top-0 z-10 border-b bg-white px-4 py-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-semibold">Painel da Cozinha</h1>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 rounded-full"
+              onClick={fetchOrders}
+              disabled={isPending}
+              aria-label="Atualizar"
+            >
+              <RefreshCwIcon size={18} className={isPending ? "animate-spin" : ""} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 rounded-full"
+              onClick={handleLogout}
+              aria-label="Sair"
+            >
+              <LogOutIcon size={18} />
+            </Button>
           </div>
         </div>
       </div>
 
-      {orders.length === 0 && !isPending && (
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">Nenhum pedido pendente</p>
-          <p className="text-sm text-muted-foreground">
-            Atualiza automaticamente a cada 30 segundos
+      <div className="p-4">
+        {orders.length === 0 && !isPending ? (
+          <div className="mt-16 text-center">
+            <p className="text-lg font-medium text-muted-foreground">
+              Nenhum pedido pendente
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Atualiza automaticamente a cada 30 segundos
+            </p>
+          </div>
+        ) : (
+          /* Mobile: stacked columns, tablet+: side by side */
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-yellow-700">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 text-xs font-bold">
+                  {pending.length}
+                </span>
+                Aguardando
+              </h2>
+              <div className="space-y-3">
+                {pending.length === 0 ? (
+                  <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    Sem pedidos aguardando
+                  </p>
+                ) : (
+                  pending.map((o) => <OrderCard key={o.id} order={o} />)
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-blue-700">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold">
+                  {inPrep.length}
+                </span>
+                Em preparo
+              </h2>
+              <div className="space-y-3">
+                {inPrep.length === 0 ? (
+                  <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    Nada em preparo
+                  </p>
+                ) : (
+                  inPrep.map((o) => <OrderCard key={o.id} order={o} />)
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {orders.length > 0 && (
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Atualiza a cada {hasActiveOrders ? "15" : "30"} segundos
           </p>
-        </div>
-      )}
-
-      {orders.length > 0 && (
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Atualiza a cada {hasActiveOrders ? "15" : "30"} segundos
-        </p>
-      )}
-
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        {STATUS_LABEL.PENDING} · {STATUS_LABEL.IN_PREPARATION} · {STATUS_LABEL.FINISHED}
-      </p>
+        )}
+      </div>
     </div>
   );
 };
