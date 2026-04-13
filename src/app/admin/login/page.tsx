@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,12 @@ import { adminLogin } from "../actions";
 
 const AdminLoginPage = () => {
   const [state, action, isPending] = useActionState(adminLogin, {});
+
+  useEffect(() => {
+    if (state?.success) {
+      window.location.href = "/admin";
+    }
+  }, [state]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">

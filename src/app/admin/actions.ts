@@ -11,9 +11,9 @@ import { signAdminSession } from "@/lib/session";
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 
 export const adminLogin = async (
-  _prev: { error?: string },
+  _prev: { error?: string; success?: boolean },
   formData: FormData,
-): Promise<{ error?: string }> => {
+): Promise<{ error?: string; success?: boolean }> => {
   const email = (formData.get("email") as string).trim().toLowerCase();
   const password = formData.get("password") as string;
 
@@ -43,7 +43,7 @@ export const adminLogin = async (
     path: "/",
   });
 
-  redirect("/admin");
+  return { success: true };
 };
 
 export const adminLogout = async () => {
