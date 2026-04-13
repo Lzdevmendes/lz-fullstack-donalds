@@ -128,7 +128,7 @@ const CartSheet = ({
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent
         side="bottom"
-        className="max-h-[90vh] overflow-y-auto rounded-t-2xl p-0"
+        className="max-h-[92vh] overflow-y-auto rounded-t-2xl p-0 pb-safe"
       >
         <SheetHeader className="border-b p-5 pb-4">
           <SheetTitle>
@@ -176,33 +176,36 @@ const CartSheet = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7 rounded-full"
+                          className="h-9 w-9 rounded-full"
                           onClick={() => decreaseQuantity(product.id)}
+                          aria-label="Diminuir quantidade"
                         >
-                          <MinusIcon size={12} />
+                          <MinusIcon size={14} />
                         </Button>
-                        <span className="w-5 text-center text-sm font-semibold">
+                        <span className="w-6 text-center text-sm font-semibold">
                           {quantity}
                         </span>
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7 rounded-full"
+                          className="h-9 w-9 rounded-full"
                           onClick={() => increaseQuantity(product.id)}
+                          aria-label="Aumentar quantidade"
                         >
-                          <PlusIcon size={12} />
+                          <PlusIcon size={14} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 rounded-full text-red-500 hover:text-red-600"
+                          className="h-9 w-9 rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
                           onClick={() => removeItem(product.id)}
+                          aria-label="Remover item"
                         >
-                          <TrashIcon size={12} />
+                          <TrashIcon size={14} />
                         </Button>
                       </div>
                     </div>
@@ -277,7 +280,7 @@ const CartSheet = ({
                 </div>
 
                 <Button
-                  className="mt-5 w-full rounded-full"
+                  className="mt-5 h-12 w-full rounded-full text-base"
                   onClick={handleProceed}
                 >
                   Continuar
@@ -352,13 +355,13 @@ const CartSheet = ({
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 rounded-full"
+                className="h-12 flex-1 rounded-full"
                 onClick={() => setStep("cart")}
               >
                 Voltar
               </Button>
               <Button
-                className="flex-1 rounded-full"
+                className="h-12 flex-1 rounded-full text-base font-semibold"
                 onClick={handleOrder}
                 disabled={isPending}
               >
