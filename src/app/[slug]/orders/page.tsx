@@ -89,13 +89,15 @@ export default function OrderHistoryPage({ onBack }: OrderHistoryPageProps = {})
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          className="h-12 text-base"
         />
         <Button
           onClick={handleSearch}
           disabled={isPending || !phone.trim()}
-          className="shrink-0"
+          className="h-12 shrink-0 gap-2 px-4"
         >
           <SearchIcon size={16} />
+          <span className="hidden sm:inline">Buscar</span>
         </Button>
       </div>
 

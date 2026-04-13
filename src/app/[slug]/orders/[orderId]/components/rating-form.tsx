@@ -45,7 +45,7 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
       <p className="mb-3 text-sm font-semibold">Como foi seu pedido?</p>
 
       <div
-        className="mb-3 flex justify-center gap-1"
+        className="mb-3 flex justify-center gap-2"
         role="radiogroup"
         aria-label="Avaliação em estrelas"
       >
@@ -56,12 +56,13 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
             role="radio"
             aria-checked={stars === s}
             aria-label={`${s} estrela${s > 1 ? "s" : ""}`}
+            className="flex h-11 w-11 items-center justify-center rounded-full active:scale-90"
             onClick={() => setStars(s)}
             onMouseEnter={() => setHovered(s)}
             onMouseLeave={() => setHovered(0)}
           >
             <StarIcon
-              size={28}
+              size={32}
               className={`transition-colors ${
                 s <= (hovered || stars)
                   ? "fill-yellow-400 text-yellow-400"
@@ -85,8 +86,7 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
       <Button
         onClick={handleSubmit}
         disabled={isPending}
-        size="sm"
-        className="mt-3 w-full rounded-full"
+        className="mt-3 h-11 w-full rounded-full"
       >
         {isPending ? "Enviando..." : "Enviar avaliação"}
       </Button>

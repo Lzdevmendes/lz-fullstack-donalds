@@ -64,7 +64,7 @@ const OrderConfirmationPage = async ({
           <div className="space-y-1 border-b py-4">
             {order.customerName && (
               <div className="flex items-center gap-2 text-sm">
-                <UserIcon size={13} className="text-muted-foreground" />
+                <UserIcon size={15} className="shrink-0 text-muted-foreground" />
                 <span>{order.customerName}</span>
               </div>
             )}
@@ -75,7 +75,7 @@ const OrderConfirmationPage = async ({
             )}
             {order.customerPhone && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <PhoneIcon size={13} />
+                <PhoneIcon size={15} className="shrink-0" />
                 <span>{order.customerPhone}</span>
               </div>
             )}
