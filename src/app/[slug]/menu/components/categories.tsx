@@ -126,11 +126,11 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
           />
           {searchQuery && (
             <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-gray-100 hover:text-foreground"
               onClick={() => setSearchQuery("")}
               aria-label="Limpar busca"
             >
-              <XIcon size={14} />
+              <XIcon size={15} />
             </button>
           )}
         </div>
@@ -155,8 +155,7 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
                   onClick={() => handleCategoryClick(category)}
                   key={category.id}
                   variant={getCategoryButtonVariant(category)}
-                  size="sm"
-                  className="rounded-full"
+                  className="h-9 shrink-0 rounded-full px-4 text-sm"
                 >
                   {category.name}
                 </Button>

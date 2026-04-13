@@ -35,34 +35,34 @@ const Products = ({ products }: ProductsProps) => {
               key={product.id}
               type="button"
               aria-label={`Ver detalhes de ${product.name}`}
-              className="flex w-full cursor-pointer items-center justify-between gap-10 border-b py-3 text-left"
+              className="flex w-full cursor-pointer items-center justify-between gap-3 border-b py-4 text-left active:bg-gray-50"
               onClick={() => setSelectedProduct(product)}
             >
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium">{product.name}</h3>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold leading-snug">{product.name}</h3>
                   {badge && (
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${badge.className}`}
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
                     >
                       {badge.label}
                     </span>
                   )}
                 </div>
-                <p className="line-clamp-2 text-sm text-muted-foreground">
+                <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                   {product.description}
                 </p>
-                <p className="pt-3 text-sm font-semibold">
+                <p className="mt-2 text-sm font-bold">
                   {formatCurrency(product.price)}
                 </p>
               </div>
 
-              <div className="relative min-h-[82px] min-w-[120px]">
+              <div className="relative h-[88px] w-[88px] shrink-0 sm:h-[100px] sm:w-[110px]">
                 <Image
                   src={product.imageUrl}
                   alt={product.name}
                   fill
-                  className="rounded-lg object-contain"
+                  className="rounded-xl object-contain"
                 />
               </div>
             </button>
