@@ -12,6 +12,8 @@ export const viewport: Viewport = {
   themeColor: "#f97316",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,          // evita zoom acidental em formulários
+  viewportFit: "cover",     // ativa safe-area no iOS (notch / home bar)
 };
 
 export const metadata: Metadata = {
