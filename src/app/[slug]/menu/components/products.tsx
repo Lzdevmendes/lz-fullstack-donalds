@@ -31,9 +31,11 @@ const Products = ({ products }: ProductsProps) => {
         {products.map((product) => {
           const badge = product.badge ? BADGE_CONFIG[product.badge] : null;
           return (
-            <div
+            <button
               key={product.id}
-              className="flex cursor-pointer items-center justify-between gap-10 border-b py-3"
+              type="button"
+              aria-label={`Ver detalhes de ${product.name}`}
+              className="flex w-full cursor-pointer items-center justify-between gap-10 border-b py-3 text-left"
               onClick={() => setSelectedProduct(product)}
             >
               <div>
@@ -63,7 +65,7 @@ const Products = ({ products }: ProductsProps) => {
                   className="rounded-lg object-contain"
                 />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
