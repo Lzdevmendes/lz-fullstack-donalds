@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { db } from "@/lib/prisma";
+import { verifyKitchenSession } from "@/lib/session";
 
 import KitchenBoard from "./kitchen-board";
 import PasswordGate from "./password-gate";
@@ -15,14 +16,14 @@ const KitchenPage = async ({ params }: KitchenPageProps) => {
 
   const restaurant = await db.restaurant.findUnique({
     where: { slug },
-    select: { name: true, kitchenPassword: true },
+    select: { name: true },
   });
 
   if (!restaurant) return notFound();
 
   const cookieStore = await cookies();
-  const auth = cookieStore.get(`kitchen_${slug}`)?.value;
-  const isAuthenticated = auth === restaurant.kitchenPassword;
+  const token = cookieStore.get(`kitchen_${slug}`)?.value;
+  const isAuthenticated = !!token && verifyKitchenSession(token) === slug;
 
   if (!isAuthenticated) {
     return <PasswordGate slug={slug} />;
