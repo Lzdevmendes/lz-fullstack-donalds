@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const HomePage = () => {
-  redirect("/pedefree");
+  redirect("/admin");
 };
 
 export default HomePage;
