@@ -5,9 +5,10 @@ import {
   CheckCircleIcon,
   ChefHatIcon,
   ClockIcon,
+  WifiOffIcon,
   XCircleIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Step {
   status: OrderStatus;
@@ -32,18 +33,28 @@ interface OrderStatusPollerProps {
   initialStatus: OrderStatus;
 }
 
+const MAX_FAILURES = 3;
+
 const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) => {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
+  const [connectionError, setConnectionError] = useState(false);
+  const failureCount = useRef(0);
 
   const poll = useCallback(async () => {
     try {
       const res = await fetch(`/api/orders/${orderId}`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
+        failureCount.current = 0;
+        setConnectionError(false);
         setStatus(data.status);
+      } else {
+        failureCount.current += 1;
+        if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
       }
     } catch {
-      // silent fail — retry on next interval
+      failureCount.current += 1;
+      if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
     }
   }, [orderId]);
 
@@ -110,10 +121,17 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
         </p>
       )}
 
-      {status !== "FINISHED" && (
+      {status !== "FINISHED" && !connectionError && (
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Atualiza automaticamente a cada 10 segundos
         </p>
+      )}
+
+      {connectionError && (
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-orange-50 px-3 py-2 text-orange-700">
+          <WifiOffIcon size={14} />
+          <p className="text-xs">Sem conexão — tentando reconectar...</p>
+        </div>
       )}
     </div>
   );
