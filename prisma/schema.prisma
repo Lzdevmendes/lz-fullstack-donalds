@@ -20,6 +20,7 @@ model Restaurant {
   primaryColor    String         @default("42 100% 50%")
   kitchenPassword String         @default("1234")
   tableCount      Int            @default(20)
+  isPaused        Boolean        @default(false)
   menuCategories  MenuCategory[]
   products        Product[]
   orders          Order[]

@@ -26,7 +26,7 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
   }
   return (
     <Suspense fallback={<RestaurantLoading />}>
-      <RestaurantApp restaurant={restaurant} />
+      <RestaurantApp restaurant={restaurant} isPaused={restaurant.isPaused} />
     </Suspense>
   );
 };

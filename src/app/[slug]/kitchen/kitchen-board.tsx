@@ -1,7 +1,7 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { BellIcon, ClockIcon, ListIcon, LogOutIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
+import { BellIcon, ClockIcon, ListIcon, LogOutIcon, PauseCircleIcon, PlayCircleIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,10 @@ import {
   cancelOrder,
   getKitchenOrders,
   getKitchenProducts,
+  getRestaurantPauseStatus,
   kitchenLogout,
   kitchenToggleProduct,
+  toggleRestaurantPause,
   updateOrderStatus,
 } from "./actions";
 
@@ -91,6 +93,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
   const knownOrderIds = useRef<Set<number>>(new Set());
   const isFirstFetch = useRef(true);
 
@@ -120,6 +123,10 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     const interval = setInterval(fetchOrders, hasActiveOrders ? 15_000 : 30_000);
     return () => clearInterval(interval);
   }, [fetchOrders, hasActiveOrders]);
+
+  useEffect(() => {
+    getRestaurantPauseStatus(slug).then(setIsPaused);
+  }, [slug]);
 
   const handleAdvanceStatus = async (order: Order) => {
     const next = STATUS_NEXT[order.status];
@@ -244,6 +251,18 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
             <Button
               variant="outline"
               size="icon"
+              className={`h-11 w-11 rounded-full ${isPaused ? "border-red-500 bg-red-50 text-red-600" : ""}`}
+              onClick={async () => {
+                await toggleRestaurantPause(slug);
+                setIsPaused((v) => !v);
+              }}
+              title={isPaused ? "Pausado — clique para aceitar pedidos" : "Clique para pausar pedidos"}
+            >
+              {isPaused ? <PauseCircleIcon size={18} /> : <PlayCircleIcon size={18} />}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
               className={`h-11 w-11 rounded-full ${soundEnabled ? "" : "opacity-40"}`}
               onClick={() => setSoundEnabled((v) => !v)}
               aria-label={soundEnabled ? "Silenciar alertas" : "Ativar alertas"}
@@ -365,6 +384,11 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
         {/* ORDERS TAB */}
         {activeTab === "orders" && (
           <>
+            {isPaused && activeTab === "orders" && (
+              <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm font-medium text-red-700 text-center">
+                ⏸ Pedidos pausados — novos pedidos não estão sendo aceitos
+              </div>
+            )}
             {orders.length === 0 && !isPending ? (
               <div className="mt-16 text-center">
                 <p className="text-lg font-medium text-muted-foreground">

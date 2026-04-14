@@ -149,3 +149,14 @@ export const getKitchenProducts = async (slug: string) => {
 export const kitchenToggleProduct = async (productId: string, isAvailable: boolean) => {
   await db.product.update({ where: { id: productId }, data: { isAvailable } });
 };
+
+export const toggleRestaurantPause = async (slug: string) => {
+  const restaurant = await db.restaurant.findUnique({ where: { slug }, select: { id: true, isPaused: true } });
+  if (!restaurant) return;
+  await db.restaurant.update({ where: { id: restaurant.id }, data: { isPaused: !restaurant.isPaused } });
+};
+
+export const getRestaurantPauseStatus = async (slug: string): Promise<boolean> => {
+  const r = await db.restaurant.findUnique({ where: { slug }, select: { isPaused: true } });
+  return r?.isPaused ?? false;
+};

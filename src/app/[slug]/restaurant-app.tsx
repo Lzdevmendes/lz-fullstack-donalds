@@ -23,11 +23,12 @@ type RestaurantWithMenu = Prisma.RestaurantGetPayload<{
 
 interface RestaurantAppProps {
   restaurant: RestaurantWithMenu;
+  isPaused?: boolean;
 }
 
 const VALID_METHODS: ConsumptionMethod[] = ["DINE_IN", "TAKEAWAY"];
 
-export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
+export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppProps) {
   const searchParams = useSearchParams();
   const { setPrefilledTable } = useCart();
   const [page, setPage] = useState<Page>("welcome");
@@ -47,6 +48,11 @@ export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
   if (page === "menu") {
     return (
       <div>
+        {isPaused && (
+          <div className="bg-red-500 text-white text-center text-sm py-2 px-4 font-medium">
+            ⏸ Restaurante pausado — não está aceitando pedidos no momento
+          </div>
+        )}
         <RestaurantHeader
           restaurant={restaurant}
           consumptionMethod={consumptionMethod}
