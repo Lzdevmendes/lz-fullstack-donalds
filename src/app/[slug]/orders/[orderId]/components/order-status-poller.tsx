@@ -60,8 +60,22 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 
   useEffect(() => {
     if (status === "FINISHED" || status === "CANCELLED") return;
-    const interval = setInterval(poll, 10_000);
-    return () => clearInterval(interval);
+
+    let interval = setInterval(poll, 10_000);
+
+    const handleVisibility = () => {
+      clearInterval(interval);
+      if (document.visibilityState === "visible") {
+        poll();
+        interval = setInterval(poll, 10_000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [poll, status]);
 
   if (status === "CANCELLED") {
