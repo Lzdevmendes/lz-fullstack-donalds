@@ -326,19 +326,18 @@ export const upsertOpeningHours = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const days = [0, 1, 2, 3, 4, 5, 6];
-
-  for (const day of days) {
-    const isClosed = formData.get(`closed_${day}`) === "on";
-    const openTime = (formData.get(`open_${day}`) as string) || "08:00";
-    const closeTime = (formData.get(`close_${day}`) as string) || "22:00";
-
-    await db.openingHours.upsert({
-      where: { restaurantId_dayOfWeek: { restaurantId, dayOfWeek: day } },
-      create: { restaurantId, dayOfWeek: day, openTime, closeTime, isClosed },
-      update: { openTime, closeTime, isClosed },
-    });
-  }
+  await Promise.all(
+    [0, 1, 2, 3, 4, 5, 6].map((day) => {
+      const isClosed = formData.get(`closed_${day}`) === "on";
+      const openTime = (formData.get(`open_${day}`) as string) || "08:00";
+      const closeTime = (formData.get(`close_${day}`) as string) || "22:00";
+      return db.openingHours.upsert({
+        where: { restaurantId_dayOfWeek: { restaurantId, dayOfWeek: day } },
+        create: { restaurantId, dayOfWeek: day, openTime, closeTime, isClosed },
+        update: { openTime, closeTime, isClosed },
+      });
+    }),
+  );
 
   revalidatePath(`/admin/restaurants/${restaurantId}`);
   redirect(`/admin/restaurants/${restaurantId}`);
