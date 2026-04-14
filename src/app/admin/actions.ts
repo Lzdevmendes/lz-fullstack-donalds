@@ -161,6 +161,14 @@ export const deleteCategory = async (id: string, restaurantId: string) => {
   revalidatePath(`/admin/restaurants/${restaurantId}`);
 };
 
+export const updateCategory = async (categoryId: string, restaurantId: string, _prev: unknown, formData: FormData) => {
+  const name = (formData.get("name") as string).trim();
+  if (!name) return;
+  await db.menuCategory.update({ where: { id: categoryId }, data: { name } });
+  revalidatePath(`/admin/restaurants/${restaurantId}`);
+  redirect(`/admin/restaurants/${restaurantId}`);
+};
+
 // ── PRODUCTS ──────────────────────────────────────────────────────────────────
 
 export const createProduct = async (

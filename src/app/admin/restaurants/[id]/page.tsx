@@ -13,6 +13,7 @@ import {
   deleteProduct,
   toggleCoupon,
   toggleProductAvailability,
+  updateCategory,
   upsertOpeningHours,
 } from "../../actions";
 
@@ -195,18 +196,27 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
         ) : (
           restaurant.menuCategories.map((cat) => (
             <div key={cat.id} className="rounded-xl border bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
                 <p className="font-semibold">{cat.name}</p>
-                <form
-                  action={async () => {
+                <div className="flex flex-wrap items-center gap-3">
+                  <form action={async (formData: FormData) => {
                     "use server";
-                    await deleteCategory(cat.id, id);
-                  }}
-                >
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-600">
-                    Excluir categoria
-                  </button>
-                </form>
+                    await updateCategory(cat.id, id, {}, formData);
+                  }} className="flex gap-2">
+                    <input name="name" defaultValue={cat.name} className="rounded border px-2 py-0.5 text-xs" />
+                    <button type="submit" className="text-xs text-green-600 hover:text-green-800">Renomear</button>
+                  </form>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await deleteCategory(cat.id, id);
+                    }}
+                  >
+                    <button type="submit" className="text-xs text-red-400 hover:text-red-600">
+                      Excluir categoria
+                    </button>
+                  </form>
+                </div>
               </div>
               {cat.products.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-muted-foreground">
