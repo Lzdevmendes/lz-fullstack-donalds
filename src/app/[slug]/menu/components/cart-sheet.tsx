@@ -299,6 +299,7 @@ const CartSheet = ({
                   setCustomerName(e.target.value);
                   setErrors((prev) => ({ ...prev, name: "" }));
                 }}
+                onKeyDown={(e) => e.key === "Enter" && handleOrder()}
               />
               {errors.name && (
                 <p className="mt-1 text-xs text-red-500">{errors.name}</p>
@@ -318,6 +319,7 @@ const CartSheet = ({
                     setTableNumber(e.target.value);
                     setErrors((prev) => ({ ...prev, table: "" }));
                   }}
+                  onKeyDown={(e) => e.key === "Enter" && handleOrder()}
                 />
                 {errors.table && (
                   <p className="mt-1 text-xs text-red-500">{errors.table}</p>
@@ -337,6 +339,7 @@ const CartSheet = ({
                     setCustomerPhone(e.target.value);
                     setErrors((prev) => ({ ...prev, phone: "" }));
                   }}
+                  onKeyDown={(e) => e.key === "Enter" && handleOrder()}
                 />
                 {errors.phone && (
                   <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
