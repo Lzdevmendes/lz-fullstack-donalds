@@ -293,6 +293,7 @@ const CartSheet = ({
               </label>
               <Input
                 placeholder="Ex: João Silva"
+                autoComplete="name"
                 value={customerName}
                 onChange={(e) => {
                   setCustomerName(e.target.value);
@@ -330,6 +331,7 @@ const CartSheet = ({
                 <Input
                   type="tel"
                   placeholder="Ex: (11) 99999-9999"
+                  autoComplete="tel"
                   value={customerPhone}
                   onChange={(e) => {
                     setCustomerPhone(e.target.value);
