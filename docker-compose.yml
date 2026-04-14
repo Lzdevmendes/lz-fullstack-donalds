@@ -3,7 +3,7 @@ version: "3.8"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: pedefree-db
+    container_name: pedefree
     restart: unless-stopped
     environment:
       POSTGRES_USER: pedefree
