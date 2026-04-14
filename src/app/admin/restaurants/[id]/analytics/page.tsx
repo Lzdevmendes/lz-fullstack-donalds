@@ -91,7 +91,15 @@ const AnalyticsPage = async ({ params }: PageProps) => {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link href={`/admin/restaurants/${id}`}>← Voltar</Link>
         </Button>
-        <h1 className="text-2xl font-bold">Analytics — {restaurant.name}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">Analytics — {restaurant.name}</h1>
+          <a
+            href={`/api/admin/restaurants/${id}/export-orders`}
+            className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          >
+            ↓ Exportar CSV
+          </a>
+        </div>
       </div>
 
       {/* STATS CARDS */}
