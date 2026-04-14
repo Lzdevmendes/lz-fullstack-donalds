@@ -94,6 +94,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [, setTick] = useState(0);
   const knownOrderIds = useRef<Set<number>>(new Set());
   const isFirstFetch = useRef(true);
 
@@ -127,6 +128,11 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   useEffect(() => {
     getRestaurantPauseStatus(slug).then(setIsPaused);
   }, [slug]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAdvanceStatus = async (order: Order) => {
     const next = STATUS_NEXT[order.status];
