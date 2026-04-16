@@ -78,7 +78,9 @@ export async function middleware(request: NextRequest) {
       !kitchenCookie?.value ||
       !(await verifyKitchenToken(kitchenCookie.value, slug))
     ) {
-      return NextResponse.next();
+      return NextResponse.redirect(
+        new URL(`/${slug}/kitchen/login`, request.url),
+      );
     }
   }
 
