@@ -69,6 +69,7 @@ const Products = memo(function Products({ products }: ProductsProps) {
 
       {selectedProduct && (
         <ProductDetails
+          key={selectedProduct.id}
           product={selectedProduct}
           open={!!selectedProduct}
           onOpenChange={(open) => !open && setSelectedProduct(null)}
