@@ -33,12 +33,14 @@ interface OrderStatusPollerProps {
   initialStatus: OrderStatus;
 }
 
+const BASE_INTERVAL = 10_000;
 const MAX_FAILURES = 3;
 
 const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) => {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [connectionError, setConnectionError] = useState(false);
   const failureCount = useRef(0);
+  const retryTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const poll = useCallback(async () => {
     try {
@@ -61,19 +63,26 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
   useEffect(() => {
     if (status === "FINISHED" || status === "CANCELLED") return;
 
-    let interval = setInterval(poll, 10_000);
+    const getInterval = () =>
+      failureCount.current > 0
+        ? Math.min(BASE_INTERVAL * 2 ** failureCount.current, 60_000)
+        : BASE_INTERVAL;
+
+    let interval = setInterval(poll, getInterval());
 
     const handleVisibility = () => {
       clearInterval(interval);
+      if (retryTimeout.current) clearTimeout(retryTimeout.current);
       if (document.visibilityState === "visible") {
         poll();
-        interval = setInterval(poll, 10_000);
+        interval = setInterval(poll, getInterval());
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       clearInterval(interval);
+      if (retryTimeout.current) clearTimeout(retryTimeout.current);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [poll, status]);
