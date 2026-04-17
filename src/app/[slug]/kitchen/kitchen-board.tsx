@@ -2,7 +2,7 @@
 
 import { OrderStatus } from "@prisma/client";
 import { BellIcon, ClockIcon, ListIcon, LogOutIcon, PauseCircleIcon, PlayCircleIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -70,6 +70,92 @@ const METHOD_LABEL: Record<string, string> = {
   DINE_IN: "Mesa",
   TAKEAWAY: "Retirada",
 };
+
+function elapsed(date: Date) {
+  const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+  return mins < 1 ? "agora" : `${mins}min`;
+}
+
+interface OrderCardProps {
+  order: Order;
+  updatingId: number | null;
+  cancellingId: number | null;
+  onAdvance: (order: Order) => void;
+  onCancel: (order: Order) => void;
+}
+
+const OrderCard = memo(function OrderCard({
+  order,
+  updatingId,
+  cancellingId,
+  onAdvance,
+  onCancel,
+}: OrderCardProps) {
+  return (
+    <div
+      className={`rounded-2xl border p-4 shadow-sm ${
+        order.status === "PENDING"
+          ? "border-yellow-200 bg-yellow-50"
+          : "border-blue-200 bg-blue-50"
+      }`}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-base font-bold">#{order.id}</span>
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <ClockIcon size={13} />
+          {elapsed(order.createdAt)}
+        </div>
+      </div>
+
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">
+          {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
+          {order.tableNumber ? ` · Mesa ${order.tableNumber}` : ""}
+        </p>
+        {order.customerName && (
+          <p className="text-sm font-medium">{order.customerName}</p>
+        )}
+      </div>
+
+      <ul className="mb-4 space-y-2">
+        {order.orderProducts.map((op, i) => (
+          <li key={i} className="text-sm">
+            <span className="font-semibold">
+              {op.quantity}x {op.product.name}
+            </span>
+            {op.notes && (
+              <p className="mt-0.5 text-xs text-muted-foreground">↳ {op.notes}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex gap-2">
+        {STATUS_NEXT[order.status] && (
+          <Button
+            className="h-11 flex-1 rounded-full text-sm"
+            disabled={updatingId === order.id || cancellingId === order.id}
+            onClick={() => onAdvance(order)}
+          >
+            {updatingId === order.id ? "Atualizando..." : STATUS_BTN[order.status]}
+          </Button>
+        )}
+
+        {(order.status === "PENDING" || order.status === "IN_PREPARATION") && (
+          <Button
+            variant="outline"
+            className="h-11 w-11 shrink-0 rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
+            disabled={cancellingId === order.id || updatingId === order.id}
+            onClick={() => onCancel(order)}
+            aria-label="Cancelar pedido"
+          >
+            <XCircleIcon size={18} />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+});
 
 type Tab = "orders" | "products";
 
@@ -147,27 +233,27 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleAdvanceStatus = async (order: Order) => {
+  const handleAdvanceStatus = useCallback(async (order: Order) => {
     const next = STATUS_NEXT[order.status];
     if (!next) return;
     setUpdatingId(order.id);
     await updateOrderStatus(order.id, next);
     fetchOrders();
     setUpdatingId(null);
-  };
+  }, [fetchOrders]);
 
-  const handleCancel = async (order: Order) => {
+  const handleCancel = useCallback(async (order: Order) => {
     if (!confirm(`Cancelar pedido #${order.id}?`)) return;
     setCancellingId(order.id);
     await cancelOrder(order.id);
     fetchOrders();
     setCancellingId(null);
-  };
+  }, [fetchOrders]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await kitchenLogout(slug);
     window.location.reload();
-  };
+  }, [slug]);
 
   const fetchProducts = useCallback(() => {
     startTransition(async () => {
@@ -180,85 +266,25 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     if (activeTab === "products") fetchProducts();
   }, [activeTab, fetchProducts]);
 
-  const handleToggleProduct = async (product: KitchenProduct) => {
+  const handleToggleProduct = useCallback(async (product: KitchenProduct) => {
     setTogglingProductId(product.id);
     await kitchenToggleProduct(product.id, !product.isAvailable);
     fetchProducts();
     setTogglingProductId(null);
-  };
+  }, [fetchProducts]);
 
-  const pending = orders.filter((o) => o.status === "PENDING");
-  const inPrep = orders.filter((o) => o.status === "IN_PREPARATION");
+  const pending = useMemo(() => orders.filter((o) => o.status === "PENDING"), [orders]);
+  const inPrep = useMemo(() => orders.filter((o) => o.status === "IN_PREPARATION"), [orders]);
 
-  const elapsed = (date: Date) => {
-    const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
-    return mins < 1 ? "agora" : `${mins}min`;
-  };
-
-  const OrderCard = ({ order }: { order: Order }) => (
-    <div
-      className={`rounded-2xl border p-4 shadow-sm ${
-        order.status === "PENDING"
-          ? "border-yellow-200 bg-yellow-50"
-          : "border-blue-200 bg-blue-50"
-      }`}
-    >
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-base font-bold">#{order.id}</span>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <ClockIcon size={13} />
-          {elapsed(order.createdAt)}
-        </div>
-      </div>
-
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">
-          {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
-          {order.tableNumber ? ` · Mesa ${order.tableNumber}` : ""}
-        </p>
-        {order.customerName && (
-          <p className="text-sm font-medium">{order.customerName}</p>
-        )}
-      </div>
-
-      <ul className="mb-4 space-y-2">
-        {order.orderProducts.map((op, i) => (
-          <li key={i} className="text-sm">
-            <span className="font-semibold">
-              {op.quantity}x {op.product.name}
-            </span>
-            {op.notes && (
-              <p className="mt-0.5 text-xs text-muted-foreground">↳ {op.notes}</p>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <div className="flex gap-2">
-        {STATUS_NEXT[order.status] && (
-          <Button
-            className="h-11 flex-1 rounded-full text-sm"
-            disabled={updatingId === order.id || cancellingId === order.id}
-            onClick={() => handleAdvanceStatus(order)}
-          >
-            {updatingId === order.id ? "Atualizando..." : STATUS_BTN[order.status]}
-          </Button>
-        )}
-
-        {(order.status === "PENDING" || order.status === "IN_PREPARATION") && (
-          <Button
-            variant="outline"
-            className="h-11 w-11 shrink-0 rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
-            disabled={cancellingId === order.id || updatingId === order.id}
-            onClick={() => handleCancel(order)}
-            aria-label="Cancelar pedido"
-          >
-            <XCircleIcon size={18} />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
+  const byCategory = useMemo(() => {
+    const result: Record<string, KitchenProduct[]> = {};
+    for (const p of products) {
+      const cat = p.menuCategory.name;
+      if (!result[cat]) result[cat] = [];
+      result[cat].push(p);
+    }
+    return result;
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
@@ -354,48 +380,40 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
                 </p>
               </div>
             ) : (
-              (() => {
-                const byCategory: Record<string, KitchenProduct[]> = {};
-                for (const p of products) {
-                  const cat = p.menuCategory.name;
-                  if (!byCategory[cat]) byCategory[cat] = [];
-                  byCategory[cat].push(p);
-                }
-                return Object.entries(byCategory).map(([cat, prods]) => (
-                  <div key={cat} className="mb-5">
-                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      {cat}
-                    </h3>
-                    <div className="space-y-2">
-                      {prods.map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm"
+              Object.entries(byCategory).map(([cat, prods]) => (
+                <div key={cat} className="mb-5">
+                  <h3 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    {cat}
+                  </h3>
+                  <div className="space-y-2">
+                    {prods.map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm"
+                      >
+                        <span className={`text-sm font-medium ${!p.isAvailable ? "text-muted-foreground line-through" : ""}`}>
+                          {p.name}
+                        </span>
+                        <button
+                          disabled={togglingProductId === p.id}
+                          onClick={() => handleToggleProduct(p)}
+                          className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                            p.isAvailable
+                              ? "bg-green-100 text-green-700 hover:bg-green-200"
+                              : "bg-red-100 text-red-600 hover:bg-red-200"
+                          }`}
                         >
-                          <span className={`text-sm font-medium ${!p.isAvailable ? "text-muted-foreground line-through" : ""}`}>
-                            {p.name}
-                          </span>
-                          <button
-                            disabled={togglingProductId === p.id}
-                            onClick={() => handleToggleProduct(p)}
-                            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                              p.isAvailable
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-red-100 text-red-600 hover:bg-red-200"
-                            }`}
-                          >
-                            {togglingProductId === p.id
-                              ? "..."
-                              : p.isAvailable
-                              ? "Disponível"
-                              : "Esgotado"}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                          {togglingProductId === p.id
+                            ? "..."
+                            : p.isAvailable
+                            ? "Disponível"
+                            : "Esgotado"}
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ));
-              })()
+                </div>
+              ))
             )}
           </div>
         )}
@@ -433,7 +451,16 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
                         Sem pedidos aguardando
                       </p>
                     ) : (
-                      pending.map((o) => <OrderCard key={o.id} order={o} />)
+                      pending.map((o) => (
+                        <OrderCard
+                          key={o.id}
+                          order={o}
+                          updatingId={updatingId}
+                          cancellingId={cancellingId}
+                          onAdvance={handleAdvanceStatus}
+                          onCancel={handleCancel}
+                        />
+                      ))
                     )}
                   </div>
                 </div>
@@ -451,7 +478,16 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
                         Nada em preparo
                       </p>
                     ) : (
-                      inPrep.map((o) => <OrderCard key={o.id} order={o} />)
+                      inPrep.map((o) => (
+                        <OrderCard
+                          key={o.id}
+                          order={o}
+                          updatingId={updatingId}
+                          cancellingId={cancellingId}
+                          onAdvance={handleAdvanceStatus}
+                          onCancel={handleCancel}
+                        />
+                      ))
                     )}
                   </div>
                 </div>
