@@ -31,9 +31,7 @@ const ProductDetails = ({
   const [notes, setNotes] = useState("");
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem(product, notes.trim() || undefined);
-    }
+    addItem(product, quantity, notes.trim() || undefined);
     onOpenChange(false);
     setQuantity(1);
     setNotes("");

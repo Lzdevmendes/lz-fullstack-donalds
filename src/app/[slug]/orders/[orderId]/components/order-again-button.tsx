@@ -20,9 +20,7 @@ export function OrderAgainButton({ slug, consumptionMethod, products }: OrderAga
   const handleOrderAgain = () => {
     clearCart();
     for (const { product, quantity } of products) {
-      for (let i = 0; i < quantity; i++) {
-        addItem(product);
-      }
+      addItem(product, quantity);
     }
     router.push(`/${slug}?consumptionMethod=${consumptionMethod}`);
   };
