@@ -2,6 +2,9 @@ import crypto from "crypto";
 
 const SECRET = process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
 
+const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
+const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+
 /** Gera um token HMAC-SHA256 para a sessão admin. */
 export function signAdminSession(email: string): string {
   const payload = `admin:${email}:${Date.now()}`;
@@ -27,7 +30,9 @@ export function verifyAdminSession(token: string): string | null {
       return null;
     }
 
-    // extrai email (2º segmento)
+    const timestamp = Number(parts[2]);
+    if (isNaN(timestamp) || Date.now() - timestamp > ADMIN_MAX_AGE_MS) return null;
+
     return parts[1] ?? null;
   } catch {
     return null;
@@ -58,6 +63,9 @@ export function verifyKitchenSession(token: string): string | null {
     if (!crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) {
       return null;
     }
+
+    const timestamp = Number(parts[2]);
+    if (isNaN(timestamp) || Date.now() - timestamp > KITCHEN_MAX_AGE_MS) return null;
 
     return parts[1] ?? null;
   } catch {

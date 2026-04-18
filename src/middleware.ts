@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 const SECRET =
   process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
 
+const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
+const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+
 /** Converts a hex string to ArrayBuffer */
 function hexToBytes(hex: string): ArrayBuffer {
   const pairs = hex.match(/.{1,2}/g) ?? [];
@@ -10,7 +13,7 @@ function hexToBytes(hex: string): ArrayBuffer {
 }
 
 /** Verifies an HMAC-SHA256 token using the Web Crypto API (Edge Runtime compatible) */
-async function verifyToken(token: string): Promise<boolean> {
+async function verifyToken(token: string, maxAgeMs: number): Promise<boolean> {
   try {
     const decoded = atob(token);
     const parts = decoded.split(":");
@@ -18,6 +21,9 @@ async function verifyToken(token: string): Promise<boolean> {
 
     const sig = parts.pop()!;
     const payload = parts.join(":");
+
+    const timestamp = Number(parts[2]);
+    if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) return false;
 
     const encoder = new TextEncoder();
     const key = await globalThis.crypto.subtle.importKey(
@@ -52,7 +58,7 @@ async function verifyKitchenToken(
     const tokenSlug = parts[1]; // kitchen:{slug}:{timestamp}:{sig}
     if (tokenSlug !== slug) return false;
 
-    return verifyToken(token);
+    return verifyToken(token, KITCHEN_MAX_AGE_MS);
   } catch {
     return false;
   }
@@ -64,7 +70,7 @@ export async function middleware(request: NextRequest) {
   // proteção do painel admin
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const session = request.cookies.get("admin_session");
-    if (!session?.value || !(await verifyToken(session.value))) {
+    if (!session?.value || !(await verifyToken(session.value, ADMIN_MAX_AGE_MS))) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
