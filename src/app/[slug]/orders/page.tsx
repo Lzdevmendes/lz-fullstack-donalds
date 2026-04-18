@@ -27,12 +27,14 @@ const STATUS_LABEL: Record<string, string> = {
   PENDING: "Aguardando",
   IN_PREPARATION: "Em preparo",
   FINISHED: "Pronto",
+  CANCELLED: "Cancelado",
 };
 
 const STATUS_COLOR: Record<string, string> = {
   PENDING: "text-yellow-600",
   IN_PREPARATION: "text-blue-600",
   FINISHED: "text-green-600",
+  CANCELLED: "text-red-500",
 };
 
 const METHOD_LABEL: Record<string, string> = {

@@ -3,17 +3,10 @@
 import { db } from "@/lib/prisma";
 
 export const getOrdersByPhone = async (phone: string, slug: string) => {
-  const restaurant = await db.restaurant.findUnique({
-    where: { slug },
-    select: { id: true },
-  });
-
-  if (!restaurant) return [];
-
-  const orders = await db.order.findMany({
+  return db.order.findMany({
     where: {
-      restaurantId: restaurant.id,
       customerPhone: phone,
+      restaurant: { slug },
     },
     include: {
       orderProducts: {
@@ -23,6 +16,4 @@ export const getOrdersByPhone = async (phone: string, slug: string) => {
     orderBy: { createdAt: "desc" },
     take: 20,
   });
-
-  return orders;
 };
