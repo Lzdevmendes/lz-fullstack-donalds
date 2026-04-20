@@ -30,6 +30,18 @@ const BADGE_OPTIONS = [
   { value: "PROMOCAO", label: "Promoção" },
 ];
 
+type BoundAction = (formData: FormData) => Promise<void>;
+
+function bindAction(
+  action: (id: string, prev: Record<string, unknown>, formData: FormData) => Promise<unknown>,
+  restaurantId: string,
+): BoundAction {
+  return async (formData: FormData) => {
+    "use server";
+    await action(restaurantId, {}, formData);
+  };
+}
+
 const RestaurantDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
@@ -47,14 +59,10 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
 
   if (!restaurant) return notFound();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createCategoryForRestaurant = createCategory.bind(null, id, {}) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createProductForRestaurant = createProduct.bind(null, id, {}) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createCouponForRestaurant = createCoupon.bind(null, id, {}) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const upsertHoursForRestaurant = upsertOpeningHours.bind(null, id, {}) as any;
+  const createCategoryForRestaurant = bindAction(createCategory, id);
+  const createProductForRestaurant = bindAction(createProduct, id);
+  const createCouponForRestaurant = bindAction(createCoupon, id);
+  const upsertHoursForRestaurant = bindAction(upsertOpeningHours, id);
 
   const hoursMap = Object.fromEntries(
     restaurant.openingHours.map((h) => [h.dayOfWeek, h]),
@@ -421,3 +429,4 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
 };
 
 export default RestaurantDetailPage;
+
