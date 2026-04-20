@@ -116,7 +116,7 @@ export const CartProvider = ({ children, slug }: CartProviderProps) => {
     [items],
   );
 
-  const ctx = useMemo(
+  const ctx: CartContextType = useMemo(
     () => ({
       items,
       addItem,
@@ -147,3 +147,4 @@ export const useCart = () => {
   if (!context) throw new Error("useCart must be used within CartProvider");
   return context;
 };
+
