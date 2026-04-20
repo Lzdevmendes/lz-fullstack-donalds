@@ -2,11 +2,11 @@
 
 import { OrderStatus } from "@prisma/client";
 import {
-  CheckCircleIcon,
-  ChefHatIcon,
-  ClockIcon,
-  WifiOffIcon,
-  XCircleIcon,
+    CheckCircleIcon,
+    ChefHatIcon,
+    ClockIcon,
+    WifiOffIcon,
+    XCircleIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

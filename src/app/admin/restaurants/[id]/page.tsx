@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
 
 import {
-  createCategory,
-  createCoupon,
-  createProduct,
-  deleteCategory,
-  deleteCoupon,
-  deleteProduct,
-  toggleCoupon,
-  toggleProductAvailability,
-  updateCategory,
-  upsertOpeningHours,
+    createCategory,
+    createCoupon,
+    createProduct,
+    deleteCategory,
+    deleteCoupon,
+    deleteProduct,
+    toggleCoupon,
+    toggleProductAvailability,
+    updateCategory,
+    upsertOpeningHours,
 } from "../../actions";
 
 interface PageProps {
