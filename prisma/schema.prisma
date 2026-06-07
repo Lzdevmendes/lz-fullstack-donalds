@@ -18,7 +18,7 @@ model Restaurant {
   avatarImageUrl  String
   coverImageUrl   String
   primaryColor    String         @default("42 100% 50%")
-  kitchenPassword String         @default("1234")
+  kitchenPassword String
   tableCount      Int            @default(20)
   isPaused        Boolean        @default(false)
   menuCategories  MenuCategory[]
