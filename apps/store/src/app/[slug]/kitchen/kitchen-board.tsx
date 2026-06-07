@@ -248,15 +248,15 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     const next = STATUS_NEXT[order.status];
     if (!next) return;
     setUpdatingId(order.id);
-    await updateOrderStatus(order.id, next);
+    await updateOrderStatus(order.id, next, slug);
     fetchOrders();
     setUpdatingId(null);
-  }, [fetchOrders]);
+  }, [fetchOrders, slug]);
 
   const handleCancel = useCallback(async (order: Order) => {
     if (!confirm(`Cancelar pedido #${order.id}?`)) return;
     setCancellingId(order.id);
-    await cancelOrder(order.id);
+    await cancelOrder(order.id, slug);
     fetchOrders();
     setCancellingId(null);
   }, [fetchOrders]);

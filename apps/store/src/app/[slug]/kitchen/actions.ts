@@ -84,6 +84,7 @@ export const kitchenLogin = async (slug: string, password: string) => {
     sameSite: "strict",
     path: "/",
     maxAge: 60 * 60 * 12,
+    secure: process.env.NODE_ENV === "production",
   });
 
   return { success: true };
@@ -94,15 +95,49 @@ export const kitchenLogout = async (slug: string) => {
   cookieStore.delete(`kitchen_${slug}`);
 };
 
+const ALLOWED_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
+  PENDING: ["IN_PREPARATION"],
+  IN_PREPARATION: ["FINISHED"],
+};
+
 export const updateOrderStatus = async (
   orderId: number,
   status: OrderStatus,
+  slug: string,
 ) => {
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { status: true, restaurant: { select: { slug: true } } },
+  });
+
+  if (!order || order.restaurant.slug !== slug) {
+    throw new Error("Pedido não encontrado");
+  }
+
+  const allowed = ALLOWED_TRANSITIONS[order.status] ?? [];
+  if (!allowed.includes(status)) {
+    throw new Error(`Transição inválida: ${order.status} → ${status}`);
+  }
+
   await db.order.update({ where: { id: orderId }, data: { status } });
   await sendPushIfAvailable(orderId, status);
 };
 
-export const cancelOrder = async (orderId: number) => {
+export const cancelOrder = async (orderId: number, slug: string) => {
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { status: true, restaurant: { select: { slug: true } } },
+  });
+
+  if (!order || order.restaurant.slug !== slug) {
+    throw new Error("Pedido não encontrado");
+  }
+
+  const cancellable: OrderStatus[] = ["PENDING", "IN_PREPARATION"];
+  if (!cancellable.includes(order.status)) {
+    throw new Error("Este pedido não pode ser cancelado");
+  }
+
   await db.order.update({
     where: { id: orderId },
     data: { status: "CANCELLED" },
