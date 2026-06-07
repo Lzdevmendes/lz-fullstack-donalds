@@ -2,69 +2,67 @@
 
 ## Contexto Rápido
 
-Plataforma de cardápio digital para restaurantes. Monorepo com dois apps Next.js:
+SaaS multi-tenant de cardápio digital por QR code. Monorepo npm workspaces:
 - `apps/admin` → painel do dono (porta 3015)
 - `apps/store` → loja/cozinha/QR codes (porta 3013)
+- `prisma/` → schema PostgreSQL compartilhado
 
-Leia `docs/architecture.md` para arquitetura completa e `docs/database.md` para o banco de dados.
+**Para entender o domínio:** leia `agents/overview.md`
+**Para entender a arquitetura:** leia `agents/architecture.md`
+**Para entender a stack:** leia `agents/stack.md`
+**Para convenções de código:** leia `agents/conventions.md`
+**Glossário de entidades:** leia `agents/glossary.md`
+
+---
+
+## As 5 Regras que NÃO se podem quebrar
+
+### 1. Nunca confie em ID sem checar o tenant
+`Order.id` é Int autoincrement — enumerável. Toda query que acessa pedido/produto/cupom deve incluir `restaurantId` ou `restaurant: { slug }` no `where` do Prisma.
+
+```ts
+// ❌ ERRADO
+await db.order.findUnique({ where: { id: orderId } });
+
+// ✅ CERTO
+await db.order.findUnique({ where: { id: orderId, restaurantId } });
+```
+
+### 2. Rotas de API do admin precisam de auth manual
+O middleware só protege `/admin/*` (HTML). Rotas `/api/admin/*` são abertas por padrão — adicione verificação de sessão em toda nova route handler do admin.
+
+### 3. Cupom só é incrementado dentro de transação com condição otimista
+```ts
+await tx.coupon.updateMany({
+  where: { id, isActive: true, usedCount: { lt: maxUses } },
+  data: { usedCount: { increment: 1 } },
+});
+```
+Nunca incremente `usedCount` fora de transação ou sem a condição de guarda.
+
+### 4. Dinheiro: não faça aritmética simples em Float para comparação
+`Product.price`, `Order.total` são `Float` (IEEE 754). Para exibição use `toFixed(2)`. Para cálculos de desconto, arredonde o resultado final. A migração ideal é para `Decimal` ou inteiro em centavos.
+
+### 5. Atualize os docs ao mudar arquitetura ou banco
+- Novo modelo Prisma → atualize `docs/database.md` e `agents/glossary.md`
+- Nova rota, serviço ou auth → atualize `agents/architecture.md` e `docs/architecture.md`
 
 ---
 
 ## Regras de Commit
 
-- **Sempre** criar commits com apenas o título (sem body, sem descrição longa)
 - Formato: `tipo: descrição curta em português`
-- Tipos aceitos: `feat`, `fix`, `refactor`, `chore`, `style`, `docs`
-- Exemplos:
-  - `feat: adicionar tela de cupons no admin`
-  - `fix: corrigir cálculo de desconto no carrinho`
-  - `chore: atualizar dependências`
-- **Nunca** usar `--amend` em commits já feitos
-- **Nunca** pular hooks com `--no-verify`
-- Commits separados por contexto — não agrupar mudanças não relacionadas
+- **Apenas título — sem body, sem descrição longa**
+- Tipos: `feat`, `fix`, `refactor`, `chore`, `style`, `docs`
+- Commits separados por contexto
 
-## Regras de Documentação
-
-- **Sempre** atualizar `docs/architecture.md` ao:
-  - Adicionar um novo app ou serviço
-  - Mudar porta de desenvolvimento
-  - Alterar fluxo de autenticação
-  - Adicionar integração externa nova (Firebase, Stripe, etc.)
-
-- **Sempre** atualizar `docs/database.md` ao:
-  - Adicionar, remover ou modificar um modelo Prisma
-  - Adicionar um novo enum
-  - Adicionar índices relevantes
-
-- Ao criar uma nova feature significativa, verificar se os docs precisam de atualização antes de commitar.
-
-## Regras de Código
-
-- Apps Next.js usam App Router — nunca criar rotas no Pages Router
-- Sempre usar `@/` para imports dentro de cada app (aponta para `src/`)
-- Prisma fica na raiz do monorepo — comandos de DB são rodados da raiz
-- Não criar comentários óbvios no código — só quando o "por que" for não-óbvio
-- Não adicionar tratamento de erro para cenários impossíveis
-- Não criar abstrações antes de ter 3+ usos reais
-
-## Estrutura de Pastas
-
-```
-apps/
-  admin/    → painel administrativo
-  store/    → loja do cliente
-docs/       → documentação fixa do projeto (sempre atualizada)
-agents/     → skills do Claude Code instaladas localmente
-prisma/     → schema e seeds (compartilhado por ambos os apps)
-```
-
-## Como Rodar
+## Como rodar
 
 ```bash
-npm run dev           # sobe admin (:3015) + store (:3013) juntos
+npm run dev           # admin (:3015) + store (:3013) juntos
 npm run dev:admin     # só o admin
 npm run dev:store     # só a loja
-npm run db:generate   # gerar Prisma client
-npm run db:push       # aplicar schema no banco
+npm run db:push       # aplica schema no banco
+npm run db:generate   # gera Prisma client
 npm run db:seed       # seed padrão
 ```
