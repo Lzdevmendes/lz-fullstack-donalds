@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 
 import { adminMessaging } from "@/lib/firebase-admin";
 import { db } from "@/lib/prisma";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
 import { signKitchenSession } from "@/lib/session";
 
 const STATUS_NOTIFICATION: Partial<
@@ -70,12 +71,19 @@ export const kitchenLogin = async (slug: string, password: string) => {
   if (!restaurant)
     return { success: false, error: "Restaurante não encontrado" };
 
+  const rl = checkRateLimit(`kitchen:${slug}`);
+  if (!rl.allowed) {
+    return { success: false, error: `Muitas tentativas. Tente novamente em ${rl.retryAfterSec}s` };
+  }
+
   const isHash = restaurant.kitchenPassword.startsWith("$2");
   const valid = isHash
     ? await bcrypt.compare(password, restaurant.kitchenPassword)
     : restaurant.kitchenPassword === password;
 
   if (!valid) return { success: false, error: "Senha incorreta" };
+
+  resetRateLimit(`kitchen:${slug}`);
 
   const token = signKitchenSession(slug);
   const cookieStore = await cookies();
