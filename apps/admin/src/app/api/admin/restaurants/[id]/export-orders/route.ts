@@ -1,11 +1,18 @@
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/prisma";
+import { verifyAdminSession } from "@/lib/session";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const session = (await cookies()).get("admin_session");
+  if (!session?.value || !verifyAdminSession(session.value)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   const orders = await db.order.findMany({
@@ -30,7 +37,7 @@ export async function GET(
   ];
 
   const csv = rows.map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
-  const bom = "\uFEFF"; // UTF-8 BOM for Excel
+  const bom = "﻿";
 
   return new NextResponse(bom + csv, {
     headers: {
