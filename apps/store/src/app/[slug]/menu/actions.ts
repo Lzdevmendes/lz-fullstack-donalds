@@ -19,8 +19,29 @@ interface CreateOrderInput {
 export const createOrder = async ({
   restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken,
 }: CreateOrderInput): Promise<{ orderId: number; slug: string }> => {
+  const restaurant = await db.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: { isPaused: true, slug: true },
+  });
+
+  if (!restaurant) throw new Error("Restaurante não encontrado");
+  if (restaurant.isPaused) throw new Error("Restaurante pausado — não aceitando pedidos no momento");
+
+  // Re-busca preços do banco para prevenir manipulação pelo cliente
+  const productIds = items.map((i) => i.product.id);
+  const dbProducts = await db.product.findMany({
+    where: { id: { in: productIds }, restaurantId, isAvailable: true },
+    select: { id: true, price: true },
+  });
+
+  if (dbProducts.length !== productIds.length) {
+    throw new Error("Um ou mais produtos não estão disponíveis");
+  }
+
+  const priceMap = new Map(dbProducts.map((p) => [p.id, p.price]));
+
   const subtotal = items.reduce(
-    (acc, item) => acc + item.product.price * item.quantity,
+    (acc, item) => acc + (priceMap.get(item.product.id) ?? 0) * item.quantity,
     0,
   );
 
@@ -75,7 +96,7 @@ export const createOrder = async ({
             data: items.map((item) => ({
               productId: item.product.id,
               quantity: item.quantity,
-              price: item.product.price,
+              price: priceMap.get(item.product.id) ?? 0,
               notes: item.notes,
             })),
           },
