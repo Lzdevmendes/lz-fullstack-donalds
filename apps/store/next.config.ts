@@ -1,3 +1,5 @@
+import { join } from "path";
+
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -11,6 +13,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
+  outputFileTracingRoot: join(__dirname, "../../"),
   images: {
     remotePatterns: [
       {
