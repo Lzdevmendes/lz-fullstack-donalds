@@ -54,6 +54,13 @@ const NewRestaurantPage = () => {
             Formato HSL sem hsl() — ex: 220 90% 56%
           </p>
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="kitchenPassword">Senha da cozinha *</Label>
+          <Input id="kitchenPassword" name="kitchenPassword" type="password" required minLength={4} />
+          <p className="text-xs text-muted-foreground">
+            Mínimo 4 caracteres — usada pela equipe para acessar o painel da cozinha
+          </p>
+        </div>
 
         {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
 

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { getBoolean, getDate, getFloat, getNumber, getString, getStringArray } from "@/lib/form-parsing";
 import { db } from "@/lib/prisma";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
 import { signAdminSession } from "@/lib/session";
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -17,6 +18,11 @@ export const adminLogin = async (
 ): Promise<{ error?: string; success?: boolean }> => {
   const email = getString(formData, "email", { trim: true, lowercase: true });
   const password = getString(formData, "password", { trim: true });
+
+  const rl = checkRateLimit(`admin:${email}`);
+  if (!rl.allowed) {
+    return { error: `Muitas tentativas. Tente novamente em ${rl.retryAfterSec}s` };
+  }
 
   const expectedEmail = (process.env.ADMIN_EMAIL ?? "").toLowerCase();
   const expectedHash = process.env.ADMIN_PASSWORD_HASH ?? "";
@@ -34,6 +40,7 @@ export const adminLogin = async (
 
   if (!valid) return { error: "Credenciais inválidas" };
 
+  resetRateLimit(`admin:${email}`);
   const token = signAdminSession(email);
   const jar = await cookies();
   jar.set("admin_session", token, {
@@ -68,13 +75,15 @@ export const createRestaurant = async (
   const tableCount = getNumber(formData, "tableCount", 20);
   const kitchenPasswordRaw = getString(formData, "kitchenPassword", { trim: true });
 
-  if (!name || !slug || !description || !avatarImageUrl || !coverImageUrl) {
+  if (!name || !slug || !description || !avatarImageUrl || !coverImageUrl || !kitchenPasswordRaw) {
     return { error: "Preencha todos os campos obrigatórios" };
   }
 
-  const kitchenPassword = kitchenPasswordRaw
-    ? await bcrypt.hash(kitchenPasswordRaw, 10)
-    : await bcrypt.hash("1234", 10);
+  if (kitchenPasswordRaw.length < 4) {
+    return { error: "Senha da cozinha deve ter no mínimo 4 caracteres" };
+  }
+
+  const kitchenPassword = await bcrypt.hash(kitchenPasswordRaw, 10);
 
   await db.restaurant.create({
     data: {
