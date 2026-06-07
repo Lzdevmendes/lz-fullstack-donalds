@@ -10,7 +10,7 @@ import { useCart } from "@/contexts/cart";
 import ConsumptionMethodOption from "./components/consumption-method-option";
 import RestaurantCategories from "./menu/components/categories";
 import RestaurantHeader from "./menu/components/header";
-import OrderHistoryPage from "./orders/page";
+import { OrderHistory } from "./orders/order-history";
 
 type Page = "welcome" | "menu" | "orders";
 
@@ -68,7 +68,7 @@ export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppPro
   }
 
   if (page === "orders") {
-    return <OrderHistoryPage onBack={() => setPage("welcome")} />;
+    return <OrderHistory onBack={() => setPage("welcome")} />;
   }
 
   return (
