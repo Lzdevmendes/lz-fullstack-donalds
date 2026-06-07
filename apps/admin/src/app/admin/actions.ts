@@ -41,6 +41,7 @@ export const adminLogin = async (
     sameSite: "strict",
     maxAge: 60 * 60 * 8,
     path: "/",
+    secure: process.env.NODE_ENV === "production",
   });
 
   return { success: true };
