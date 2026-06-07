@@ -32,7 +32,7 @@ const OrderConfirmationPage = async ({
     },
   });
 
-  if (!order) return notFound();
+  if (!order || order.restaurant.slug !== slug) return notFound();
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,7 +118,7 @@ const OrderConfirmationPage = async ({
 
         {/* Avaliação */}
         {order.status === "FINISHED" && !order.rating && (
-          <RatingForm orderId={order.id} />
+          <RatingForm orderId={order.id} restaurantSlug={slug} />
         )}
 
         {/* Ações */}

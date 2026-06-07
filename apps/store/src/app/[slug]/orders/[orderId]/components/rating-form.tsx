@@ -10,9 +10,10 @@ import { submitRating } from "../actions";
 
 interface RatingFormProps {
   orderId: number;
+  restaurantSlug: string;
 }
 
-const RatingForm = ({ orderId }: RatingFormProps) => {
+const RatingForm = ({ orderId, restaurantSlug }: RatingFormProps) => {
   const [stars, setStars] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
@@ -23,7 +24,7 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
   const handleSubmit = () => {
     if (stars === 0) { setError("Selecione uma nota"); return; }
     startTransition(async () => {
-      const result = await submitRating(orderId, stars, comment);
+      const result = await submitRating(orderId, stars, comment, restaurantSlug);
       if (result.success) {
         setDone(true);
       } else {

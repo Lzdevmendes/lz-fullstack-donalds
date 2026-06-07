@@ -6,15 +6,18 @@ export const submitRating = async (
   orderId: number,
   stars: number,
   comment: string,
+  restaurantSlug: string,
 ): Promise<{ success: boolean; error?: string }> => {
   if (stars < 1 || stars > 5) return { success: false, error: "Nota inválida" };
 
   const order = await db.order.findUnique({
     where: { id: orderId },
-    select: { status: true, rating: true },
+    select: { status: true, rating: true, restaurant: { select: { slug: true } } },
   });
 
-  if (!order) return { success: false, error: "Pedido não encontrado" };
+  if (!order || order.restaurant.slug !== restaurantSlug) {
+    return { success: false, error: "Pedido não encontrado" };
+  }
   if (order.status !== "FINISHED") return { success: false, error: "Só é possível avaliar pedidos concluídos" };
   if (order.rating) return { success: false, error: "Pedido já avaliado" };
 
