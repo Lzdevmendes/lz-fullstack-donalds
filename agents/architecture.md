@@ -24,18 +24,19 @@ O slug do restaurante é a chave de tenant. Toda query deve incluir `restaurantI
 
 ## Auth — Admin
 
-- Sessão HMAC SHA-256 em cookie `admin_session` (httpOnly, sameSite: strict, 8h)
+- Sessão HMAC SHA-256 em cookie `admin_session` (httpOnly, sameSite: strict, secure em prod, 8h)
 - Implementação: `apps/admin/src/lib/session.ts` (signAdminSession / verifyAdminSession)
 - Middleware: `apps/admin/src/middleware.ts` (Web Crypto, protege `/admin/*`)
-- ⚠️ O middleware **NÃO** protege `/api/admin/*` — rotas de API precisam verificar a sessão manualmente
+- O middleware **NÃO** protege `/api/admin/*` — rotas de API adicionam verificação manual de sessão
 - Credenciais: `ADMIN_EMAIL` + `ADMIN_PASSWORD_HASH` (bcrypt) ou `ADMIN_PASSWORD` (plaintext dev)
+- NEXTAUTH_SECRET obrigatório — falha ruidosamente se não definido
 
 ## Auth — Cozinha
 
-- Sessão HMAC por slug em cookie `kitchen_{slug}` (httpOnly, sameSite: strict, 12h)
+- Sessão HMAC por slug em cookie `kitchen_{slug}` (httpOnly, sameSite: strict, secure em prod, 12h)
 - Implementação: `apps/store/src/lib/session.ts` (signKitchenSession / verifyKitchenSession)
 - Verificação feita na KitchenPage (SSR), não no middleware
-- ⚠️ Server Actions de cozinha (`updateOrderStatus`, `cancelOrder`) não revalidam a sessão
+- Server Actions de cozinha (`updateOrderStatus`, `cancelOrder`) validam tenant via `slug` no banco
 
 ## Firebase FCM
 
@@ -56,5 +57,5 @@ O slug do restaurante é a chave de tenant. Toda query deve incluir `restaurantI
 
 | App   | Rota                                          | Auth?     | Descrição              |
 |-------|-----------------------------------------------|-----------|------------------------|
-| store | GET /api/orders/[orderId]                     | ❌ nenhuma | Status do pedido       |
-| admin | GET /api/admin/restaurants/[id]/export-orders | ❌ nenhuma | Export CSV — BUG GRAVE |
+| store | GET /api/orders/[orderId]                     | ❌ nenhuma    | Status do pedido (polling) |
+| admin | GET /api/admin/restaurants/[id]/export-orders | ✅ admin_session | Export CSV             |

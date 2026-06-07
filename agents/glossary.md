@@ -2,8 +2,8 @@
 
 ## Restaurant
 Tenant principal do sistema. Cada restaurante tem um `slug` único que aparece na URL.
-- `isPaused: Boolean` — quando true, impede criação de pedidos (⚠️ não verificado em createOrder atualmente)
-- `kitchenPassword: String` — hash bcrypt da senha da cozinha
+- `isPaused: Boolean` — quando true, impede criação de pedidos (verificado em `createOrder`)
+- `kitchenPassword: String` — hash bcrypt da senha da cozinha (sem default — deve ser definida no seed)
 - `primaryColor: String` — HSL sem parênteses (ex: `"42 100% 50%"`) usado como CSS custom property
 
 ## MenuCategory
