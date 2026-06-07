@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 const prismaClient = new PrismaClient();
 
@@ -13,6 +14,7 @@ const main = async () => {
         slug: "pedefree",
         description: "Pedidos rápidos e fáceis para o seu dia a dia",
         primaryColor: "42 100% 50%",
+        kitchenPassword: bcrypt.hashSync("pedefree123", 10),
         avatarImageUrl:
           "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQvcNP9rHlEJu1vCY5kLqzjf29HKaeN78Z6pRy",
         coverImageUrl:

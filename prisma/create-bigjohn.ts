@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 const db = new PrismaClient();
 
@@ -38,7 +39,7 @@ const main = async () => {
         "https://static.ifood-static.com.br/image/upload/logosgde/a6082ee4-13ea-4649-b276-dde7af384af4/202503110920_hmN6_i.jpg",
       coverImageUrl:
         "https://static.ifood-static.com.br/image/upload/logosgde/a6082ee4-13ea-4649-b276-dde7af384af4/202503110920_hmN6_i.jpg",
-      kitchenPassword: "bigjohn123",
+      kitchenPassword: bcrypt.hashSync("bigjohn123", 10),
       tableCount: 15,
       openingHours: {
         create: [

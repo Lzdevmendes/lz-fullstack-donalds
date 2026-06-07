@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 // Restaurante Gamboa — Cozinha Caiçara
 // Av. Dr. Arthur da Costa Filho, 457 — Caraguatatuba, SP
@@ -33,7 +34,7 @@ const main = async () => {
         avatarImageUrl: img("1414235077428-338989a2e8c0", 400),
         coverImageUrl: img("1507525428034-b723cf961d3e", 1200),
         tableCount: 25,
-        kitchenPassword: "gamboa123", // será substituído por hash quando editado no painel
+        kitchenPassword: bcrypt.hashSync("gamboa123", 10),
       },
     });
 
