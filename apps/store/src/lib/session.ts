@@ -1,6 +1,10 @@
 import crypto from "crypto";
 
-const SECRET = process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
+const SECRET = (() => {
+  const s = process.env.NEXTAUTH_SECRET;
+  if (!s) throw new Error("NEXTAUTH_SECRET não definido — defina a variável de ambiente");
+  return s;
+})();
 
 const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;

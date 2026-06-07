@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SECRET =
-  process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
+const SECRET = (() => {
+  const s = process.env.NEXTAUTH_SECRET;
+  if (!s) throw new Error("NEXTAUTH_SECRET não definido");
+  return s;
+})();
 
 const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 
