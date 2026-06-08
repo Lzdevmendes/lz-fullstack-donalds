@@ -3,7 +3,7 @@
 import { OpeningHours, Prisma } from "@prisma/client";
 import { ClockIcon, SearchIcon, SparklesIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { db } from "@/lib/prisma";
+
 import { updateProduct } from "../../../../../actions";
 
 const BADGE_OPTIONS = [
