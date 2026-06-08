@@ -65,10 +65,12 @@ npm install
 
 ### 3. Variáveis de ambiente
 
-Copie `.env.example` para `.env` na raiz:
+Copie `.env.example` para `.env` na raiz e crie os symlinks para cada app:
 
 ```bash
 cp .env.example .env
+ln -sf ../../.env apps/admin/.env
+ln -sf ../../.env apps/store/.env
 ```
 
 Edite `.env` — mínimo para funcionar localmente:
