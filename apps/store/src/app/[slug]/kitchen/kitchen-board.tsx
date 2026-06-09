@@ -1,13 +1,14 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { BellIcon, ClockIcon, ListIcon, LogOutIcon, PauseCircleIcon, PlayCircleIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
+import { BellIcon, ClockIcon, HistoryIcon, ListIcon, LogOutIcon, PauseCircleIcon, PlayCircleIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import {
   cancelOrder,
+  getKitchenOrderHistory,
   getKitchenOrders,
   getKitchenProducts,
   getRestaurantPauseStatus,
@@ -157,7 +158,7 @@ const OrderCard = memo(function OrderCard({
   );
 });
 
-type Tab = "orders" | "products";
+type Tab = "orders" | "products" | "history";
 
 interface KitchenProduct {
   id: string;
@@ -174,6 +175,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const [activeTab, setActiveTab] = useState<Tab>("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<KitchenProduct[]>([]);
+  const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
@@ -273,9 +275,17 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     });
   }, [slug]);
 
+  const fetchHistory = useCallback(() => {
+    startTransition(async () => {
+      const data = await getKitchenOrderHistory(slug);
+      setHistoryOrders(data as Order[]);
+    });
+  }, [slug]);
+
   useEffect(() => {
     if (activeTab === "products") fetchProducts();
-  }, [activeTab, fetchProducts]);
+    if (activeTab === "history") fetchHistory();
+  }, [activeTab, fetchProducts, fetchHistory]);
 
   const handleToggleProduct = useCallback(async (product: KitchenProduct) => {
     setTogglingProductId(product.id);
@@ -376,6 +386,17 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
           >
             <UtensilsIcon size={14} />
             Produtos
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm font-medium transition ${
+              activeTab === "history"
+                ? "bg-foreground text-background"
+                : "bg-gray-100 text-muted-foreground"
+            }`}
+          >
+            <HistoryIcon size={14} />
+            Histórico
           </button>
         </div>
       </div>
@@ -505,6 +526,76 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
               </div>
             )}
           </>
+        )}
+
+        {/* HISTORY TAB */}
+        {activeTab === "history" && (
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Últimas 24 horas</p>
+              <button
+                onClick={fetchHistory}
+                disabled={isPending}
+                className="text-xs text-blue-500 hover:text-blue-700 disabled:opacity-40"
+              >
+                Atualizar
+              </button>
+            </div>
+            {historyOrders.length === 0 && !isPending ? (
+              <div className="mt-16 text-center">
+                <p className="text-lg font-medium text-muted-foreground">
+                  Nenhum pedido finalizado
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pedidos concluídos ou cancelados nas últimas 24h aparecem aqui
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {historyOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className={`rounded-2xl border p-4 shadow-sm ${
+                      order.status === "FINISHED"
+                        ? "border-green-200 bg-green-50"
+                        : "border-gray-200 bg-gray-50"
+                    }`}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-bold">#{order.id}</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            order.status === "FINISHED"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          {order.status === "FINISHED" ? "Pronto" : "Cancelado"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <ClockIcon size={13} />
+                        {elapsed(order.createdAt)}
+                      </div>
+                    </div>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
+                      {order.tableNumber ? ` · Mesa ${order.tableNumber}` : ""}
+                      {order.customerName ? ` · ${order.customerName}` : ""}
+                    </p>
+                    <ul className="space-y-1">
+                      {order.orderProducts.map((op, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">
+                          {op.quantity}x {op.product.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {activeTab === "orders" && orders.length > 0 && (

@@ -188,3 +188,20 @@ export const getRestaurantPauseStatus = async (slug: string): Promise<boolean> =
   const r = await db.restaurant.findUnique({ where: { slug }, select: { isPaused: true } });
   return r?.isPaused ?? false;
 };
+
+export const getKitchenOrderHistory = async (slug: string) => {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return db.order.findMany({
+    where: {
+      restaurant: { slug },
+      status: { in: ["FINISHED", "CANCELLED"] },
+      updatedAt: { gte: since },
+    },
+    include: {
+      orderProducts: {
+        include: { product: { select: { name: true } } },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+};
